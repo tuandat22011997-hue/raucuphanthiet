@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { productsApi, categoriesApi } from '@/lib/api';
 import { getImageUrl, formatCurrency } from '@/lib/utils';
@@ -20,7 +20,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
-export default function ProductsPage() {
+function ProductsPageContent() {
   const searchParams = useSearchParams();
   const defaultCategory = searchParams.get('category') || '';
   const defaultSearch = searchParams.get('q') || '';
@@ -138,7 +138,7 @@ export default function ProductsPage() {
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Label className="whitespace-nowrap text-gray-600">Sắp xếp:</Label>
-              <Select value={sort} onValueChange={setSort}>
+              <Select value={sort} onValueChange={(value) => setSort(value ?? 'newest')}>
                 <SelectTrigger className="w-[180px] rounded-full">
                   <SelectValue placeholder="Mới nhất" />
                 </SelectTrigger>
@@ -218,5 +218,13 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageContent />
+    </Suspense>
   );
 }

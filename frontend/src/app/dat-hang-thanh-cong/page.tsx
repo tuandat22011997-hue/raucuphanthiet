@@ -1,11 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ShoppingBag, ArrowRight } from 'lucide-react';
 
-export default function OrderSuccessPage() {
+function OrderSuccessPageContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get('orderNumber');
 
@@ -51,5 +52,13 @@ export default function OrderSuccessPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={null}>
+      <OrderSuccessPageContent />
+    </Suspense>
   );
 }

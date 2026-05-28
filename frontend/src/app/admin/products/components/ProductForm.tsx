@@ -167,7 +167,7 @@ export function ProductForm({ open, onOpenChange, product }: ProductFormProps) {
             
             <div className="space-y-2">
               <Label>Danh mục *</Label>
-              <Select value={categoryId} onValueChange={(val) => setValue('categoryId', val)}>
+              <Select value={categoryId} onValueChange={(val) => setValue('categoryId', val ?? '')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>
