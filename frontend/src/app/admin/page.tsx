@@ -7,9 +7,10 @@ import { ShoppingCart, DollarSign, Package, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AdminDashboardPage() {
-  const { data: statsRes, isLoading } = useQuery({
+  const { data: statsRes, isLoading, error } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: () => ordersApi.getDashboardStats(),
+    retry: 1,
   });
 
   const stats = statsRes?.data || {
@@ -53,6 +54,14 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return <div className="animate-pulse flex gap-4">Đang tải dữ liệu...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Không tải được dữ liệu dashboard. Hãy kiểm tra backend local đang chạy và bạn đã đăng nhập bằng tài khoản admin.
+      </div>
+    );
   }
 
   return (

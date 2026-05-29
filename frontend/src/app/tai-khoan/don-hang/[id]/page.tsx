@@ -1,17 +1,20 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Calendar, Clock, FileDown, MapPin, RotateCcw, ShoppingBag, StickyNote } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { ordersApi } from '@/lib/api';
 import { formatCurrency, formatDateTime, ORDER_STATUS_MAP, ORDER_STATUS_COLOR, getImageUrl } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, ArrowLeft, FileDown, MapPin, Phone, Calendar, Clock, StickyNote } from 'lucide-react';
-import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { useCartStore } from '@/store/cartStore';
 
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const addItem = useCartStore((state) => state.addItem);
   const orderId = params.id as string;
 
   const { data: res, isLoading, error } = useQuery({
@@ -39,8 +42,8 @@ export default function OrderDetailPage() {
       const url = window.URL.createObjectURL(new Blob([response.data as any]));
       const link = document.createElement('a');
       link.href = url;
-      
-      let filename = `DonHang_${order?.orderNumber || orderId}.xlsx`;
+
+      let filename = `ĐơnHàng_${order?.orderNumber || orderId}.xlsx`;
       const contentDisposition = response.headers['content-disposition'];
       if (contentDisposition) {
         const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
@@ -51,15 +54,42 @@ export default function OrderDetailPage() {
           if (match) filename = match[1];
         }
       }
-      
+
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
       toast.success('Xuất file Excel thành công');
-    } catch (err) {
+    } catch {
       toast.error('Có lỗi xảy ra khi xuất file');
     }
+  };
+
+  const handleReorder = () => {
+    const reorderableItems = (order?.items || []).filter(
+      (item: any) => item.product?.id && item.product?.slug,
+    );
+
+    if (reorderableItems.length === 0) {
+      toast.error('Không còn sản phẩm hợp lệ để đặt lại');
+      return;
+    }
+
+    reorderableItems.forEach((item: any) => {
+      addItem({
+        productId: item.product.id,
+        name: item.product.name,
+        slug: item.product.slug,
+        price: item.price,
+        quantity: item.quantity,
+        imageUrl: item.product.images?.[0]?.url,
+        unit: item.product.unit || 'kg',
+        stock: item.product.stock || 0,
+      });
+    });
+
+    toast.success('Đã thêm sản phẩm từ đơn cũ vào giỏ hàng');
+    router.push('/gio-hang');
   };
 
   return (
@@ -74,27 +104,35 @@ export default function OrderDetailPage() {
             {order && <p className="text-sm text-gray-500 mt-1">Mã: {order.orderNumber}</p>}
           </div>
         </div>
-        
+
         {order && (
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <FileDown size={16} />
-            Xuất Excel
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleReorder}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 shadow-sm hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 transition-all"
+            >
+              <RotateCcw size={16} />
+              Đặt lại đơn này
+            </button>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <FileDown size={16} />
+              Xuất Excel
+            </button>
+          </div>
         )}
       </div>
 
       {isLoading || !order ? (
         <div className="animate-pulse space-y-6">
-          <div className="h-24 bg-gray-50 rounded-xl"></div>
-          <div className="h-48 bg-gray-50 rounded-xl"></div>
-          <div className="h-64 bg-gray-50 rounded-xl"></div>
+          <div className="h-24 bg-gray-50 rounded-xl" />
+          <div className="h-48 bg-gray-50 rounded-xl" />
+          <div className="h-64 bg-gray-50 rounded-xl" />
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Trạng thái đơn hàng */}
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <p className="text-sm text-gray-500 mb-1">Ngày đặt: {formatDateTime(order.createdAt)}</p>
@@ -111,7 +149,6 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Thông tin giao hàng */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="border rounded-xl p-5">
               <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -121,7 +158,7 @@ export default function OrderDetailPage() {
                 <p><span className="text-gray-500 w-24 inline-block">Họ tên:</span> <span className="font-medium">{order.customerName}</span></p>
                 <p><span className="text-gray-500 w-24 inline-block">Điện thoại:</span> <span className="font-medium">{order.phone}</span></p>
                 <div className="flex gap-2">
-                  <span className="text-gray-500 w-22 shrink-0">Địa chỉ:</span> 
+                  <span className="text-gray-500 w-22 shrink-0">Địa chỉ:</span>
                   <span>{order.address}</span>
                 </div>
               </div>
@@ -144,7 +181,6 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Danh sách sản phẩm */}
           <div className="border rounded-xl overflow-hidden">
             <div className="bg-gray-50 px-5 py-3 border-b font-bold text-gray-900">
               Sản phẩm đã đặt ({order.items.length})
@@ -175,8 +211,7 @@ export default function OrderDetailPage() {
                 </div>
               ))}
             </div>
-            
-            {/* Tổng kết tiền */}
+
             <div className="bg-gray-50 p-5 border-t">
               <div className="flex justify-end">
                 <div className="w-full sm:w-64 space-y-3">

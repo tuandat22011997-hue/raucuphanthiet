@@ -1,7 +1,7 @@
 import type { Response } from 'express';
-import { OrdersService } from './orders.service';
 import { ExcelService } from '../excel/excel.service';
-import { CreateOrderDto, UpdateOrderStatusDto, OrderQueryDto } from './dto/order.dto';
+import { CreateOrderDto, OrderQueryDto, UpdateOrderStatusDto } from './dto/order.dto';
+import { OrdersService } from './orders.service';
 export declare class OrdersController {
     private readonly ordersService;
     private readonly excelService;
@@ -24,24 +24,24 @@ export declare class OrdersController {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                isFeatured: boolean;
+                slug: string;
                 description: string | null;
                 sortOrder: number;
-                unit: string;
-                slug: string;
-                categoryId: string;
+                isFeatured: boolean;
+                nameSearch: string;
                 price: number;
                 priceWhole: number | null;
+                unit: string;
                 stock: number;
-                nameSearch: string;
+                categoryId: string;
             };
         } & {
             id: string;
             createdAt: Date;
-            note: string | null;
             price: number;
-            productId: string;
+            note: string | null;
             quantity: number;
+            productId: string;
             orderId: string;
         })[];
     } & {
@@ -49,9 +49,9 @@ export declare class OrdersController {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;
@@ -68,8 +68,8 @@ export declare class OrdersController {
                     id: string;
                     name: string;
                     isActive: boolean;
-                    unit: string;
                     slug: string;
+                    unit: string;
                     stock: number;
                     images: {
                         id: string;
@@ -83,10 +83,10 @@ export declare class OrdersController {
             } & {
                 id: string;
                 createdAt: Date;
-                note: string | null;
                 price: number;
-                productId: string;
+                note: string | null;
                 quantity: number;
+                productId: string;
                 orderId: string;
             })[];
         } & {
@@ -94,9 +94,9 @@ export declare class OrdersController {
             phone: string;
             createdAt: Date;
             updatedAt: Date;
-            address: string;
             orderNumber: string;
             customerName: string;
+            address: string;
             note: string | null;
             deliveryDate: string | null;
             deliveryTime: string | null;
@@ -129,9 +129,9 @@ export declare class OrdersController {
             phone: string;
             createdAt: Date;
             updatedAt: Date;
-            address: string;
             orderNumber: string;
             customerName: string;
+            address: string;
             note: string | null;
             deliveryDate: string | null;
             deliveryTime: string | null;
@@ -165,10 +165,10 @@ export declare class OrdersController {
             } & {
                 id: string;
                 createdAt: Date;
-                note: string | null;
                 price: number;
-                productId: string;
+                note: string | null;
                 quantity: number;
+                productId: string;
                 orderId: string;
             })[];
         } & {
@@ -176,9 +176,9 @@ export declare class OrdersController {
             phone: string;
             createdAt: Date;
             updatedAt: Date;
-            address: string;
             orderNumber: string;
             customerName: string;
+            address: string;
             note: string | null;
             deliveryDate: string | null;
             deliveryTime: string | null;
@@ -219,24 +219,24 @@ export declare class OrdersController {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                isFeatured: boolean;
+                slug: string;
                 description: string | null;
                 sortOrder: number;
-                unit: string;
-                slug: string;
-                categoryId: string;
+                isFeatured: boolean;
+                nameSearch: string;
                 price: number;
                 priceWhole: number | null;
+                unit: string;
                 stock: number;
-                nameSearch: string;
+                categoryId: string;
             };
         } & {
             id: string;
             createdAt: Date;
-            note: string | null;
             price: number;
-            productId: string;
+            note: string | null;
             quantity: number;
+            productId: string;
             orderId: string;
         })[];
     } & {
@@ -244,9 +244,9 @@ export declare class OrdersController {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;
@@ -265,24 +265,24 @@ export declare class OrdersController {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                isFeatured: boolean;
+                slug: string;
                 description: string | null;
                 sortOrder: number;
-                unit: string;
-                slug: string;
-                categoryId: string;
+                isFeatured: boolean;
+                nameSearch: string;
                 price: number;
                 priceWhole: number | null;
+                unit: string;
                 stock: number;
-                nameSearch: string;
+                categoryId: string;
             };
         } & {
             id: string;
             createdAt: Date;
-            note: string | null;
             price: number;
-            productId: string;
+            note: string | null;
             quantity: number;
+            productId: string;
             orderId: string;
         })[];
     } & {
@@ -290,9 +290,9 @@ export declare class OrdersController {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;
@@ -309,9 +309,9 @@ export declare class OrdersController {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;

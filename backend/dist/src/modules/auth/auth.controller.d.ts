@@ -48,10 +48,10 @@ export declare class AuthController {
             createdAt: Date;
             updatedAt: Date;
             address: string;
+            userId: string;
             label: string | null;
             fullName: string;
             isDefault: boolean;
-            userId: string;
         }[];
         _count: {
             orders: number;

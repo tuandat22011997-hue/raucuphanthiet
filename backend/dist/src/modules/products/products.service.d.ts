@@ -25,16 +25,16 @@ export declare class ProductsService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            isFeatured: boolean;
+            slug: string;
             description: string | null;
             sortOrder: number;
-            unit: string;
-            slug: string;
-            categoryId: string;
+            isFeatured: boolean;
+            nameSearch: string;
             price: number;
             priceWhole: number | null;
+            unit: string;
             stock: number;
-            nameSearch: string;
+            categoryId: string;
         })[];
         meta: {
             total: number;
@@ -48,9 +48,9 @@ export declare class ProductsService {
     search(q: string, limit?: number): Promise<{
         id: string;
         name: string;
-        unit: string;
         slug: string;
         price: number;
+        unit: string;
         stock: number;
         images: {
             url: string;
@@ -64,10 +64,10 @@ export declare class ProductsService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            slug: string;
             description: string | null;
             imageUrl: string | null;
             sortOrder: number;
-            slug: string;
         };
         images: {
             id: string;
@@ -84,16 +84,16 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     findById(id: string): Promise<{
         category: {
@@ -103,10 +103,10 @@ export declare class ProductsService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            slug: string;
             description: string | null;
             imageUrl: string | null;
             sortOrder: number;
-            slug: string;
         };
         images: {
             id: string;
@@ -123,16 +123,16 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     create(dto: CreateProductDto, imageUrls?: string[]): Promise<{
         category: {
@@ -142,10 +142,10 @@ export declare class ProductsService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            slug: string;
             description: string | null;
             imageUrl: string | null;
             sortOrder: number;
-            slug: string;
         };
         images: {
             id: string;
@@ -162,16 +162,16 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     update(id: string, dto: UpdateProductDto, imageUrls?: string[]): Promise<{
         category: {
@@ -181,10 +181,10 @@ export declare class ProductsService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            slug: string;
             description: string | null;
             imageUrl: string | null;
             sortOrder: number;
-            slug: string;
         };
         images: {
             id: string;
@@ -201,16 +201,16 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -219,23 +219,23 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     getTopSelling(limit?: number): Promise<{
         totalSold: number;
         id: string;
         name: string;
-        unit: string;
         price: number;
+        unit: string;
         images: {
             id: string;
             createdAt: Date;

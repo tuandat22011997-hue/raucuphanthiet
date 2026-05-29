@@ -32,7 +32,7 @@ export default function HomePage() {
 
   const handleAddToCart = (product: any) => {
     addItem({
-      id: product.id,
+      productId: product.id,
       name: product.name,
       slug: product.slug,
       price: product.price,

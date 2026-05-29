@@ -112,7 +112,7 @@ export default function CartPage() {
   
   const handleAddQuick = (product: any) => {
     addItem({
-      id: product.id,
+      productId: product.id,
       name: product.name,
       slug: product.slug,
       price: product.price,
@@ -159,7 +159,7 @@ export default function CartPage() {
       setFormData(prev => ({ 
         ...prev, 
         address: defaultAddr.address, 
-        customerName: defaultAddr.name || user?.name || prev.customerName || '', 
+        customerName: defaultAddr.fullName || user?.name || prev.customerName || '', 
         phone: defaultAddr.phone || user?.phone || prev.phone || '' 
       }));
     }
@@ -184,7 +184,7 @@ export default function CartPage() {
       const orderData = {
         ...formData,
         items: items.map((item) => ({
-          productId: item.id,
+          productId: item.productId,
           quantity: item.quantity,
         })),
       };
@@ -375,14 +375,14 @@ export default function CartPage() {
                                   setFormData({
                                     ...formData, 
                                     address: addr.address, 
-                                    customerName: addr.name || user?.name || '', 
+                                    customerName: addr.fullName || user?.name || '', 
                                     phone: addr.phone || user?.phone || ''
                                   });
                                 }}
                               />
                               <div className="flex-1">
                                 <div className="font-medium text-gray-900 text-sm">
-                                  {addr.name || user?.name} - {addr.phone || user?.phone}
+                                  {addr.fullName || user?.name} - {addr.phone || user?.phone}
                                 </div>
                                 <div className="text-gray-500 text-sm mt-0.5">{addr.address}</div>
                                 {addr.isDefault && (

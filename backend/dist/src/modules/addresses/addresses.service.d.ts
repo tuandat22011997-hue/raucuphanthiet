@@ -9,10 +9,10 @@ export declare class AddressesService {
         createdAt: Date;
         updatedAt: Date;
         address: string;
+        userId: string;
         label: string | null;
         fullName: string;
         isDefault: boolean;
-        userId: string;
     }[]>;
     create(userId: string, dto: CreateAddressDto): Promise<{
         id: string;
@@ -20,10 +20,10 @@ export declare class AddressesService {
         createdAt: Date;
         updatedAt: Date;
         address: string;
+        userId: string;
         label: string | null;
         fullName: string;
         isDefault: boolean;
-        userId: string;
     }>;
     update(userId: string, addressId: string, dto: UpdateAddressDto): Promise<{
         id: string;
@@ -31,10 +31,10 @@ export declare class AddressesService {
         createdAt: Date;
         updatedAt: Date;
         address: string;
+        userId: string;
         label: string | null;
         fullName: string;
         isDefault: boolean;
-        userId: string;
     }>;
     remove(userId: string, addressId: string): Promise<{
         id: string;
@@ -42,9 +42,9 @@ export declare class AddressesService {
         createdAt: Date;
         updatedAt: Date;
         address: string;
+        userId: string;
         label: string | null;
         fullName: string;
         isDefault: boolean;
-        userId: string;
     }>;
 }

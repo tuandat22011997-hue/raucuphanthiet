@@ -1,72 +1,388 @@
-# Hướng dẫn Chuẩn bị & Triển khai Dự án lên VPS
+# Hướng Dẫn Triển Khai Dự Án Lên VPS
 
-Để đưa dự án **Rau Củ Phan Thiết** (Frontend: Next.js, Backend: NestJS, Database: SQLite/PostgreSQL) lên môi trường chạy thật (Production) một cách chuyên nghiệp và ổn định, dưới đây là danh sách những thứ bạn cần chuẩn bị và lộ trình thực hiện.
+Tài liệu này áp dụng cho trạng thái hiện tại của dự án `Rau Củ Phan Thiết`.
 
----
+- Frontend: `Next.js`
+- Backend: `NestJS`
+- Database: `PostgreSQL`
+- File upload: lưu local trong `backend/uploads`
 
-## PHẦN 1: BẠN CẦN CHUẨN BỊ NHỮNG GÌ?
+Mô hình triển khai:
 
-> [!IMPORTANT]
-> Đây là các tài nguyên bạn cần tự trang bị trước khi chúng ta bắt tay vào cài đặt.
+- `frontend` chạy cổng `3000`
+- `backend` chạy cổng `4000`
+- `nginx` reverse proxy domain thật về 2 service này
+- `pm2` giữ tiến trình luôn hoạt động
 
-### 1. Thuê máy chủ ảo (VPS)
-- **Hệ điều hành khuyên dùng:** `Ubuntu 22.04 LTS` hoặc `Ubuntu 24.04 LTS` (Bảo mật tốt, cộng đồng hỗ trợ lớn nhất).
-- **Cấu hình tối thiểu:** **2GB RAM**, 1-2 Core CPU, 30GB SSD. (Do Next.js khi `build` và chạy tốn khá nhiều RAM, nếu VPS 1GB RAM rất dễ bị sập).
-- **Nhà cung cấp gợi ý:** 
-  - Trong nước (tải nhanh): Vietnix, AZDigi, TinoHost.
-  - Quốc tế (ổn định, rẻ): DigitalOcean, Vultr, Linode.
-- **Kết quả cần có:** Bạn sẽ nhận được 1 địa chỉ `IP public` (vd: `103.150.23.11`), tài khoản `root` và `mật khẩu` để đăng nhập.
+## 1. Chuẩn Bị
 
-### 2. Tên miền (Domain)
-- Một tên miền cho website (vd: `raucuphanthiet.com` hoặc `raucu.vn`).
-- Sau khi mua xong, bạn cần cấu hình DNS trỏ 2 bản ghi sau về **địa chỉ IP của VPS**:
-  - Bản ghi `A` - Tên: `@` - Giá trị: `[IP của VPS]`
-  - Bản ghi `A` - Tên: `www` - Giá trị: `[IP của VPS]`
-  - *(Tùy chọn cho API)* Bản ghi `A` - Tên: `api` - Giá trị: `[IP của VPS]` (Để API chạy qua `api.raucuphanthiet.com`).
+Bạn cần có:
 
-### 3. Đưa mã nguồn (Code) lên Internet
-Để dễ dàng đưa code từ máy tính lên VPS, bạn cần tải mã nguồn lên một nền tảng lưu trữ.
-- Tạo một kho lưu trữ **Private (Riêng tư)** trên [GitHub](https://github.com/) hoặc [GitLab](https://gitlab.com/).
-- Cài đặt Git và Push toàn bộ thư mục `frontend` và `backend` lên kho lưu trữ đó.
-- *(Cách thủ công nhưng kém an toàn: Bạn có thể nén file `.zip` và dùng FileZilla đẩy trực tiếp lên VPS).*
+1. VPS Ubuntu `22.04 LTS` hoặc `24.04 LTS`
+2. Domain trỏ về IP VPS
+3. Code đã đẩy lên GitHub/GitLab để `git clone`
 
----
+Cấu hình VPS khuyến nghị:
 
-## PHẦN 2: LỘ TRÌNH TÔI SẼ HỖ TRỢ BẠN CÀI ĐẶT
+- `2 GB RAM` trở lên
+- `1-2 vCPU`
+- `30 GB SSD` trở lên
 
-Khi bạn đã có đủ 3 thứ trên (VPS, Tên miền, GitHub Repo), tôi sẽ hướng dẫn bạn gõ các lệnh trên VPS để thiết lập theo mô hình chuẩn **Node.js + PM2 + Nginx**:
+Lý do:
 
-### Bước 1: Cài đặt môi trường trên VPS
-- Cài đặt `Node.js` (phiên bản 20.x).
-- Cài đặt `PM2` (Công cụ quản lý giúp tự động chạy lại code nếu bị sập hoặc khởi động lại máy).
-- Cài đặt `Nginx` (Phần mềm đóng vai trò cổng gác, điều hướng tên miền vào đúng code và cài chứng chỉ SSL bảo mật).
+- `Next.js` lúc build khá tốn RAM
+- backend dùng `PostgreSQL` và lưu ảnh upload local
 
-### Bước 2: Tải code và cấu hình Backend (NestJS)
-- Dùng lệnh `git clone` để tải code từ GitHub về VPS.
-- Sửa lại file `.env` cho Production (đổi `JWT_SECRET`, đổi đường dẫn Frontend...).
-- Vì hiện tại bạn dùng SQLite (chạy rất tốt cho quy mô nhỏ), chúng ta sẽ giữ nguyên cơ sở dữ liệu lưu dưới dạng file.
-- Chạy lệnh `npm install`, sau đó `npx prisma db push`, và `npm run build`.
-- Dùng PM2 để chạy Backend chạy ngầm ở cổng `4000`.
+## 2. DNS Domain
 
-### Bước 3: Cấu hình Frontend (Next.js)
-- Cập nhật file `.env` của Frontend để API trỏ về tên miền thật (vd: `NEXT_PUBLIC_API_URL=https://api.raucuphanthiet.com/api/v1`).
-- Chạy lệnh `npm install` và `npm run build`.
-- Dùng PM2 để chạy Frontend ở cổng `3000`.
+Trỏ domain về VPS bằng các bản ghi:
 
-### Bước 4: Thiết lập Tên miền và Bảo mật SSL (HTTPS)
-- Cấu hình **Nginx** để:
-  - Khi khách vào `raucuphanthiet.com` -> Nginx chuyển yêu cầu tới cổng `3000` (Frontend).
-  - Khi khách gọi `api.raucuphanthiet.com` (hoặc `raucuphanthiet.com/api`) -> Nginx chuyển yêu cầu tới cổng `4000` (Backend).
-- Cài đặt `Certbot` (Let's Encrypt) để tự động tạo và gia hạn chứng chỉ **SSL miễn phí**, biến HTTP thành HTTPS an toàn.
+- `A` record `@` -> `IP_VPS`
+- `A` record `www` -> `IP_VPS`
+- `A` record `api` -> `IP_VPS`
 
----
+Ví dụ:
 
-## 🔥 BẠN CẦN LÀM GÌ TIẾP THEO?
+- `raucuphanthiet.com` -> frontend
+- `api.raucuphanthiet.com` -> backend
 
-> [!TIP]
-> Nếu bạn chưa quen dùng Git/GitHub, hãy tạo tài khoản GitHub trước. Sau đó tôi sẽ hướng dẫn bạn từng dòng lệnh để đẩy code từ máy tính (VSCode) của bạn lên GitHub.
+## 3. Cài Môi Trường Trên VPS
 
-**Hãy cho tôi biết tiến độ hiện tại của bạn:**
-1. Bạn đã thuê được VPS và Tên miền chưa? (Nếu có hãy cho tôi biết Hệ điều hành đang chạy, tuyệt đối không gửi mật khẩu tại đây).
-2. Code của bạn đã nằm trên GitHub chưa?
-3. Bạn muốn tiếp tục dùng **SQLite** (dễ bảo trì, đủ dùng) hay muốn chuyển sang **PostgreSQL** (chuyên nghiệp hơn, chịu tải lớn hơn) cho môi trường thực tế?
+SSH vào VPS:
+
+```bash
+ssh root@IP_VPS
+```
+
+Cập nhật hệ thống:
+
+```bash
+apt update && apt upgrade -y
+```
+
+Cài các gói cơ bản:
+
+```bash
+apt install -y curl git unzip nginx certbot python3-certbot-nginx
+```
+
+Cài Node.js 20:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+```
+
+Kiểm tra:
+
+```bash
+node -v
+npm -v
+```
+
+Cài PM2:
+
+```bash
+npm install -g pm2
+```
+
+## 4. Cài PostgreSQL
+
+Cài PostgreSQL:
+
+```bash
+apt install -y postgresql postgresql-contrib
+```
+
+Đăng nhập PostgreSQL:
+
+```bash
+sudo -u postgres psql
+```
+
+Tạo database và user production:
+
+```sql
+CREATE DATABASE raucuphanthiet;
+CREATE USER raucu_user WITH PASSWORD 'doi_mat_khau_manh';
+GRANT ALL PRIVILEGES ON DATABASE raucuphanthiet TO raucu_user;
+\q
+```
+
+## 5. Tải Code Về VPS
+
+Ví dụ đặt code tại:
+
+```bash
+mkdir -p /var/www
+cd /var/www
+git clone <REPO_URL> raucuphanthiet
+cd raucuphanthiet
+```
+
+Cấu trúc repo hiện tại:
+
+- `frontend/`
+- `backend/`
+
+## 6. Cấu Hình Backend
+
+Tạo file `backend/.env` production:
+
+```env
+DATABASE_URL="postgresql://raucu_user:doi_mat_khau_manh@localhost:5432/raucuphanthiet?schema=public"
+JWT_SECRET="doi-secret-manh"
+JWT_EXPIRES_IN="7d"
+JWT_REFRESH_SECRET="doi-refresh-secret-manh"
+JWT_REFRESH_EXPIRES_IN="30d"
+PORT=4000
+NODE_ENV=production
+UPLOAD_DIR=./uploads
+MAX_FILE_SIZE=5242880
+FRONTEND_URL=https://raucuphanthiet.com
+```
+
+Cài package và build backend:
+
+```bash
+cd /var/www/raucuphanthiet/backend
+npm install
+npx prisma generate
+npm run db:push
+npm run build
+```
+
+Nếu cần seed dữ liệu mẫu:
+
+```bash
+npm run db:seed
+```
+
+Chạy backend bằng PM2:
+
+```bash
+pm2 start npm --name raucu-backend -- run start:prod
+```
+
+Lưu ý:
+
+- script production hiện đúng là `node dist/src/main.js`
+- ảnh upload sẽ lưu tại `backend/uploads`
+
+## 7. Cấu Hình Frontend
+
+Tạo file `frontend/.env.local` production:
+
+```env
+NEXT_PUBLIC_API_URL=https://api.raucuphanthiet.com/api/v1
+NEXT_PUBLIC_UPLOADS_URL=https://api.raucuphanthiet.com
+NEXT_PUBLIC_SITE_NAME=Rau Củ Phan Thiết
+NEXT_PUBLIC_SITE_PHONE=0901234567
+```
+
+Build frontend:
+
+```bash
+cd /var/www/raucuphanthiet/frontend
+npm install
+npm run build
+```
+
+Chạy frontend bằng PM2:
+
+```bash
+pm2 start npm --name raucu-frontend -- start
+```
+
+## 8. Tự Khởi Động Sau Khi Reboot
+
+Lưu process PM2:
+
+```bash
+pm2 save
+pm2 startup
+```
+
+PM2 sẽ in ra một lệnh. Copy và chạy đúng lệnh đó.
+
+## 9. Cấu Hình Nginx
+
+Tạo file nginx cho frontend:
+
+```bash
+nano /etc/nginx/sites-available/raucuphanthiet.com
+```
+
+Nội dung:
+
+```nginx
+server {
+    server_name raucuphanthiet.com www.raucuphanthiet.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+Tạo file nginx cho API:
+
+```bash
+nano /etc/nginx/sites-available/api.raucuphanthiet.com
+```
+
+Nội dung:
+
+```nginx
+server {
+    server_name api.raucuphanthiet.com;
+
+    client_max_body_size 10M;
+
+    location / {
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+Kích hoạt cấu hình:
+
+```bash
+ln -s /etc/nginx/sites-available/raucuphanthiet.com /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/api.raucuphanthiet.com /etc/nginx/sites-enabled/
+nginx -t
+systemctl reload nginx
+```
+
+## 10. Cài SSL
+
+Chạy Certbot:
+
+```bash
+certbot --nginx -d raucuphanthiet.com -d www.raucuphanthiet.com
+certbot --nginx -d api.raucuphanthiet.com
+```
+
+Kiểm tra tự gia hạn:
+
+```bash
+certbot renew --dry-run
+```
+
+## 11. Kiểm Tra Sau Deploy
+
+Kiểm tra PM2:
+
+```bash
+pm2 list
+pm2 logs raucu-backend
+pm2 logs raucu-frontend
+```
+
+Kiểm tra API:
+
+```bash
+curl http://127.0.0.1:4000/api/v1/categories?activeOnly=true
+```
+
+Kiểm tra Nginx:
+
+```bash
+systemctl status nginx
+```
+
+Kiểm tra web:
+
+- `https://raucuphanthiet.com`
+- `https://api.raucuphanthiet.com/api/v1/categories?activeOnly=true`
+
+## 12. Cập Nhật Code Sau Này
+
+Khi cần deploy bản mới:
+
+```bash
+cd /var/www/raucuphanthiet
+git pull
+
+cd backend
+npm install
+npx prisma generate
+npm run build
+pm2 restart raucu-backend
+
+cd ../frontend
+npm install
+npm run build
+pm2 restart raucu-frontend
+```
+
+Nếu schema database thay đổi:
+
+```bash
+cd /var/www/raucuphanthiet/backend
+npm run db:push
+pm2 restart raucu-backend
+```
+
+## 13. Ghi Chú Quan Trọng
+
+- Dự án hiện không còn dùng SQLite
+- ảnh upload là file local, nên phải backup thư mục `backend/uploads`
+- database phải backup riêng bằng PostgreSQL
+- nếu đổi domain production, nhớ sửa lại:
+  - `backend/.env` -> `FRONTEND_URL`
+  - `frontend/.env.local` -> `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_UPLOADS_URL`
+
+## 14. Backup Khuyến Nghị
+
+Backup database:
+
+```bash
+pg_dump -U raucu_user -h localhost raucuphanthiet > /root/backup-raucu.sql
+```
+
+Backup uploads:
+
+```bash
+tar -czf /root/uploads-backup.tar.gz /var/www/raucuphanthiet/backend/uploads
+```
+
+## 15. Trạng Thái Hiện Tại Của Repo
+
+Các lệnh quan trọng đang đúng với repo này:
+
+Backend:
+
+```bash
+npm run build
+npm run db:push
+npm run db:seed
+npm run start:prod
+```
+
+Frontend:
+
+```bash
+npm run build
+npm start
+```
+
+Nếu cần, có thể viết tiếp một bản `deploy từng lệnh một` dành riêng cho:
+
+1. VPS mới hoàn toàn
+2. deploy từ GitHub
+3. cấu hình theo domain thật của bạn

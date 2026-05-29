@@ -53,7 +53,8 @@ class LoginDto {
 }
 exports.LoginDto = LoginDto;
 __decorate([
-    (0, class_validator_1.IsEmail)({}, { message: 'Email không hợp lệ' }),
+    (0, class_validator_1.IsString)({ message: 'Vui lòng nhập email hoặc admin' }),
+    (0, class_validator_1.MinLength)(1, { message: 'Vui lòng nhập email hoặc admin' }),
     __metadata("design:type", String)
 ], LoginDto.prototype, "email", void 0);
 __decorate([

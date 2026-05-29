@@ -1,16 +1,28 @@
 import {
-  Controller, Get, Post, Patch, Delete, Body, Param,
-  Query, UseGuards, HttpCode, HttpStatus, Res, Request, ForbiddenException
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { OrdersService } from './orders.service';
-import { ExcelService } from '../excel/excel.service';
-import { CreateOrderDto, UpdateOrderStatusDto, OrderQueryDto } from './dto/order.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { ExcelService } from '../excel/excel.service';
+import { CreateOrderDto, OrderQueryDto, UpdateOrderStatusDto } from './dto/order.dto';
+import { OrdersService } from './orders.service';
 
 @Controller('orders')
 export class OrdersController {
@@ -21,7 +33,7 @@ export class OrdersController {
 
   /**
    * POST /api/v1/orders - Tạo đơn hàng
-   * Không bắt buộc đăng nhập (hỗ trợ cả khách vãng lai)
+   * Bắt buộc đăng nhập để chặn khách vãng lai và gắn đơn hàng với tài khoản
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -41,8 +53,8 @@ export class OrdersController {
   ) {
     return this.ordersService.findMyOrders(
       userId,
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 10,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 10,
     );
   }
 
@@ -82,8 +94,8 @@ export class OrdersController {
   }
 
   /**
-   * GET /api/v1/orders/:id/export - Xuất Excel 1 đơn hàng (Admin)
-   * Tải file: TenKhachHang_DD-MM-YYYY.xlsx
+   * GET /api/v1/orders/:id/export - Xuất Excel 1 đơn hàng
+   * Người dùng chỉ được xuất đơn của chính mình, admin được xuất mọi đơn
    */
   @Get(':id/export')
   @UseGuards(JwtAuthGuard)
@@ -92,16 +104,20 @@ export class OrdersController {
     if (req.user.role !== 'ADMIN' && order.userId !== req.user.id) {
       throw new ForbiddenException('Bạn không có quyền xuất file đơn hàng này');
     }
-    const { buffer, filename } = await this.excelService.exportSingleOrder(order);
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    const { buffer, filename } = await this.excelService.exportSingleOrder(order);
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+    );
     res.send(buffer);
   }
 
-  /**
-   * POST /api/v1/orders/export-bulk - Xuất Excel nhiều đơn (Admin)
-   */
+  /** POST /api/v1/orders/export-bulk - Xuất Excel nhiều đơn (Admin) */
   @Post('export-bulk')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -109,8 +125,14 @@ export class OrdersController {
     const orders = await Promise.all(ids.map((id) => this.ordersService.findById(id)));
     const { buffer, filename } = await this.excelService.exportMultipleOrders(orders);
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+    );
     res.send(buffer);
   }
 

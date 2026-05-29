@@ -1,4 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -54,7 +56,6 @@ export class UsersService {
       }),
     ]);
 
-    // Tính tổng chi tiêu
     const usersWithStats = users.map((u) => ({
       ...u,
       totalOrders: u._count.orders,
@@ -69,18 +70,73 @@ export class UsersService {
     };
   }
 
+  /** Admin: Cập nhật khách hàng */
+  async updateCustomer(
+    id: string,
+    data: { name?: string; email?: string; phone?: string; password?: string; isActive?: boolean },
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user || user.deletedAt) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+
+    if (user.role !== 'CUSTOMER') {
+      throw new NotFoundException('Không tìm thấy khách hàng');
+    }
+
+    const normalizedEmail = data.email?.trim().toLowerCase();
+    if (normalizedEmail && normalizedEmail !== user.email) {
+      const existingUser = await this.prisma.user.findFirst({
+        where: {
+          email: normalizedEmail,
+          id: { not: id },
+          deletedAt: null,
+        },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('Email đã được sử dụng');
+      }
+    }
+
+    const normalizedPassword = data.password?.trim();
+    const hashedPassword =
+      normalizedPassword && normalizedPassword.length > 0
+        ? await bcrypt.hash(normalizedPassword, 12)
+        : undefined;
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(normalizedEmail !== undefined ? { email: normalizedEmail } : {}),
+        ...(data.phone !== undefined ? { phone: data.phone } : {}),
+        ...(hashedPassword !== undefined ? { password: hashedPassword } : {}),
+        ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+      },
+    });
+  }
+
   /** Admin: Xóa khách hàng (soft delete) */
   async deleteUser(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Không tìm thấy người dùng');
-    
+
     return this.prisma.user.update({
       where: { id },
-      data: { 
+      data: {
         email: `${user.email}_deleted_${Date.now()}`,
-        deletedAt: new Date(), 
-        isActive: false 
-      }
+        deletedAt: new Date(),
+        isActive: false,
+      },
     });
   }
 }

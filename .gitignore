@@ -1,0 +1,13 @@
+.logs/
+
+backend/dist/
+backend/node_modules/
+backend/prisma/dev.db
+backend/prisma/dev.db-shm
+backend/prisma/dev.db-wal
+
+frontend/.next/
+frontend/node_modules/
+frontend/tsconfig.tsbuildinfo
+
+*.tsbuildinfo

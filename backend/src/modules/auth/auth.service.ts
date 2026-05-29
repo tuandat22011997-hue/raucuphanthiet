@@ -1,14 +1,15 @@
 import {
-  Injectable,
   ConflictException,
-  UnauthorizedException,
+  Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+
 import { PrismaService } from '../../prisma/prisma.service';
-import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, ResetPasswordDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,18 +21,16 @@ export class AuthService {
 
   /** Đăng ký tài khoản mới */
   async register(dto: RegisterDto) {
-    // Kiểm tra email đã tồn tại chưa
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
+
     if (existingUser) {
       throw new ConflictException('Email đã được sử dụng');
     }
 
-    // Hash password với bcrypt (saltRounds = 12)
     const hashedPassword = await bcrypt.hash(dto.password, 12);
 
-    // Tạo user mới
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
@@ -59,35 +58,37 @@ export class AuthService {
       },
     });
 
-    // Tạo JWT token ngay sau khi đăng ký
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
     return {
       user,
       ...tokens,
-      message: 'Đăng ký thành công! Chào mừng bạn đến với Rau Củ Phan Thiết 🥬',
+      message: 'Đăng ký thành công! Chào mừng bạn đến với Rau Củ Phan Thiết',
     };
   }
 
   /** Đăng nhập */
   async login(dto: LoginDto) {
-    // Tìm user theo email
+    const normalizedIdentifier = dto.email.trim().toLowerCase();
+    const loginEmail =
+      normalizedIdentifier === 'admin'
+        ? 'admin@raucuphanthiet.vn'
+        : normalizedIdentifier;
+
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email, deletedAt: null },
+      where: { email: loginEmail, deletedAt: null },
     });
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
     }
 
-    // So sánh password với hash
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
     }
 
     const { password: _, ...userWithoutPassword } = user;
-
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
     return {
@@ -108,7 +109,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.newPassword, 12);
-    
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: { password: hashedPassword },
@@ -137,7 +138,10 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new NotFoundException('Không tìm thấy tài khoản');
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy tài khoản');
+    }
+
     return user;
   }
 

@@ -14,13 +14,13 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
-const orders_service_1 = require("./orders.service");
-const excel_service_1 = require("../excel/excel.service");
-const order_dto_1 = require("./dto/order.dto");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
-const roles_decorator_1 = require("../../common/decorators/roles.decorator");
-const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const excel_service_1 = require("../excel/excel.service");
+const order_dto_1 = require("./dto/order.dto");
+const orders_service_1 = require("./orders.service");
 let OrdersController = class OrdersController {
     ordersService;
     excelService;
@@ -33,7 +33,7 @@ let OrdersController = class OrdersController {
         return this.ordersService.create(dto, userId);
     }
     findMyOrders(userId, page, limit) {
-        return this.ordersService.findMyOrders(userId, page ? parseInt(page) : 1, limit ? parseInt(limit) : 10);
+        return this.ordersService.findMyOrders(userId, page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 10);
     }
     getDashboardStats() {
         return this.ordersService.getDashboardStats();

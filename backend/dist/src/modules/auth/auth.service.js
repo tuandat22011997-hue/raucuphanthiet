@@ -44,8 +44,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
-const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
+const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
 let AuthService = class AuthService {
@@ -95,12 +95,16 @@ let AuthService = class AuthService {
         return {
             user,
             ...tokens,
-            message: 'Đăng ký thành công! Chào mừng bạn đến với Rau Củ Phan Thiết 🥬',
+            message: 'Đăng ký thành công! Chào mừng bạn đến với Rau Củ Phan Thiết',
         };
     }
     async login(dto) {
+        const normalizedIdentifier = dto.email.trim().toLowerCase();
+        const loginEmail = normalizedIdentifier === 'admin'
+            ? 'admin@raucuphanthiet.vn'
+            : normalizedIdentifier;
         const user = await this.prisma.user.findUnique({
-            where: { email: dto.email, deletedAt: null },
+            where: { email: loginEmail, deletedAt: null },
         });
         if (!user || !user.isActive) {
             throw new common_1.UnauthorizedException('Email hoặc mật khẩu không đúng');
@@ -149,8 +153,9 @@ let AuthService = class AuthService {
                 },
             },
         });
-        if (!user)
+        if (!user) {
             throw new common_1.NotFoundException('Không tìm thấy tài khoản');
+        }
         return user;
     }
     async generateTokens(userId, email, role) {

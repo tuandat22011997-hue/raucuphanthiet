@@ -1,20 +1,53 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ShoppingBag, ChevronRight, FileDown, RotateCcw } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { ordersApi } from '@/lib/api';
 import { formatCurrency, formatDateTime, ORDER_STATUS_MAP, ORDER_STATUS_COLOR } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, ChevronRight, FileDown } from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
+import { useCartStore } from '@/store/cartStore';
 
 export default function OrdersPage() {
+  const router = useRouter();
+  const addItem = useCartStore((state) => state.addItem);
+
   const { data: res, isLoading } = useQuery({
     queryKey: ['my-orders'],
     queryFn: () => ordersApi.getMyOrders(1, 50),
   });
 
   const orders = res?.data?.data || [];
+
+  const handleReorder = (order: any) => {
+    const reorderableItems = (order.items || []).filter(
+      (item: any) => item.product?.id && item.product?.slug,
+    );
+
+    if (reorderableItems.length === 0) {
+      toast.error('Không còn sản phẩm hợp lệ để đặt lại');
+      return;
+    }
+
+    reorderableItems.forEach((item: any) => {
+      addItem({
+        productId: item.product.id,
+        name: item.product.name,
+        slug: item.product.slug,
+        price: item.price,
+        quantity: item.quantity,
+        imageUrl: item.product.images?.[0]?.url,
+        unit: item.product.unit || 'kg',
+        stock: item.product.stock || 0,
+      });
+    });
+
+    toast.success('Đã thêm sản phẩm từ đơn cũ vào giỏ hàng');
+    router.push('/gio-hang');
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-8">
@@ -23,7 +56,7 @@ export default function OrdersPage() {
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-gray-50 h-32 rounded-xl border border-gray-100"></div>
+            <div key={i} className="animate-pulse bg-gray-50 h-32 rounded-xl border border-gray-100" />
           ))}
         </div>
       ) : orders.length > 0 ? (
@@ -40,7 +73,7 @@ export default function OrdersPage() {
                     {ORDER_STATUS_MAP[order.status] || order.status}
                   </Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                   <div className="text-xs md:text-sm text-gray-500">
                     {order.items?.length || 0} sản phẩm
@@ -49,8 +82,16 @@ export default function OrdersPage() {
                     {formatCurrency(order.totalAmount)}
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2 mt-1">
+
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  <button
+                    onClick={() => handleReorder(order)}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs md:text-sm font-semibold text-white bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 shadow-sm hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 transition-all"
+                  >
+                    <RotateCcw size={14} />
+                    Đặt lại
+                  </button>
+
                   <button
                     onClick={async (e) => {
                       e.preventDefault();
@@ -59,8 +100,8 @@ export default function OrdersPage() {
                         const url = window.URL.createObjectURL(new Blob([response.data as any]));
                         const link = document.createElement('a');
                         link.href = url;
-                        
-                        let filename = `DonHang_${order.orderNumber}.xlsx`;
+
+                        let filename = `ĐơnHàng_${order.orderNumber}.xlsx`;
                         const contentDisposition = response.headers['content-disposition'];
                         if (contentDisposition) {
                           const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
@@ -71,25 +112,25 @@ export default function OrdersPage() {
                             if (match) filename = match[1];
                           }
                         }
-                        
+
                         link.setAttribute('download', filename);
                         document.body.appendChild(link);
                         link.click();
                         link.parentNode?.removeChild(link);
                         toast.success('Xuất file Excel thành công');
-                      } catch (error) {
+                      } catch {
                         toast.error('Có lỗi xảy ra khi xuất file');
                       }
                     }}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-gray-200 rounded-lg text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-center gap-1.5 py-2.5 border border-gray-200 rounded-lg text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <FileDown size={14} />
                     Xuất
                   </button>
-                  
+
                   <Link
                     href={`/tai-khoan/don-hang/${order.id}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-green-50 text-green-700 rounded-lg text-xs md:text-sm font-medium hover:bg-green-100 transition-colors"
+                    className="flex items-center justify-center gap-1.5 py-2.5 bg-green-50 text-green-700 rounded-lg text-xs md:text-sm font-medium hover:bg-green-100 transition-colors"
                   >
                     Chi tiết
                     <ChevronRight size={14} />

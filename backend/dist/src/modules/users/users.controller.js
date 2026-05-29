@@ -14,11 +14,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
-const users_service_1 = require("./users.service");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
-const roles_decorator_1 = require("../../common/decorators/roles.decorator");
-const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const users_service_1 = require("./users.service");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
@@ -28,7 +28,10 @@ let UsersController = class UsersController {
         return this.usersService.updateProfile(userId, body);
     }
     findAllCustomers(page, limit, search) {
-        return this.usersService.findAllCustomers(page ? parseInt(page) : 1, limit ? parseInt(limit) : 20, search);
+        return this.usersService.findAllCustomers(page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 20, search);
+    }
+    updateCustomer(id, body) {
+        return this.usersService.updateCustomer(id, body);
     }
     deleteUser(id) {
         return this.usersService.deleteUser(id);
@@ -55,6 +58,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAllCustomers", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('ADMIN'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateCustomer", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

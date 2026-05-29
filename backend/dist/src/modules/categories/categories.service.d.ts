@@ -14,10 +14,10 @@ export declare class CategoriesService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        slug: string;
         description: string | null;
         imageUrl: string | null;
         sortOrder: number;
-        slug: string;
     })[]>;
     findBySlug(slug: string): Promise<{
         _count: {
@@ -30,10 +30,10 @@ export declare class CategoriesService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        slug: string;
         description: string | null;
         imageUrl: string | null;
         sortOrder: number;
-        slug: string;
     }>;
     create(dto: CreateCategoryDto): Promise<{
         id: string;
@@ -42,10 +42,10 @@ export declare class CategoriesService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        slug: string;
         description: string | null;
         imageUrl: string | null;
         sortOrder: number;
-        slug: string;
     }>;
     update(id: string, dto: UpdateCategoryDto): Promise<{
         id: string;
@@ -54,10 +54,10 @@ export declare class CategoriesService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        slug: string;
         description: string | null;
         imageUrl: string | null;
         sortOrder: number;
-        slug: string;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -66,9 +66,9 @@ export declare class CategoriesService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        slug: string;
         description: string | null;
         imageUrl: string | null;
         sortOrder: number;
-        slug: string;
     }>;
 }

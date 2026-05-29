@@ -59,12 +59,15 @@ export class ProductsService {
     let orderBy: any = {};
     switch (sortBy) {
       case 'price_asc':
+      case 'priceAsc':
         orderBy = { price: 'asc' };
         break;
       case 'price_desc':
+      case 'priceDesc':
         orderBy = { price: 'desc' };
         break;
       case 'name':
+      case 'nameAsc':
         orderBy = { name: 'asc' };
         break;
       case 'newest':
@@ -205,25 +208,26 @@ export class ProductsService {
   /** Cập nhật sản phẩm */
   async update(id: string, dto: UpdateProductDto, imageUrls?: string[]) {
     const product = await this.findById(id);
+    const { retainedImageUrls, ...productData } = dto;
 
     // Cập nhật slug và nameSearch nếu đổi tên
     let slug = product.slug;
     let nameSearch = product.nameSearch;
 
-    if (dto.name && dto.name !== product.name) {
-      nameSearch = removeVietnameseTones(dto.name);
-      slug = createSlug(dto.name);
+    if (productData.name && productData.name !== product.name) {
+      nameSearch = removeVietnameseTones(productData.name);
+      slug = createSlug(productData.name);
       const existing = await this.prisma.product.findFirst({
         where: { slug, id: { not: id } },
       });
       if (existing) {
-        slug = createSlug(dto.name, Date.now().toString().slice(-4));
+        slug = createSlug(productData.name, Date.now().toString().slice(-4));
       }
     }
 
     // Ghi log nếu stock thay đổi
-    if (dto.stock !== undefined && dto.stock !== product.stock) {
-      const diff = dto.stock - product.stock;
+    if (productData.stock !== undefined && productData.stock !== product.stock) {
+      const diff = productData.stock - product.stock;
       await this.prisma.inventoryLog.create({
         data: {
           productId: id,
@@ -234,16 +238,21 @@ export class ProductsService {
       });
     }
 
+    const finalImageUrls =
+      imageUrls !== undefined
+        ? [...(retainedImageUrls || []), ...imageUrls]
+        : retainedImageUrls;
+
     return this.prisma.product.update({
       where: { id },
       data: {
-        ...dto,
+        ...productData,
         slug,
         nameSearch,
-        ...(imageUrls !== undefined && {
+        ...(finalImageUrls !== undefined && {
           images: {
             deleteMany: {},
-            create: imageUrls.map((url, index) => ({ url, sortOrder: index })),
+            create: finalImageUrls.map((url, index) => ({ url, sortOrder: index })),
           },
         }),
       },

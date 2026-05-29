@@ -21,24 +21,24 @@ export declare class OrdersService {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                isFeatured: boolean;
+                slug: string;
                 description: string | null;
                 sortOrder: number;
-                unit: string;
-                slug: string;
-                categoryId: string;
+                isFeatured: boolean;
+                nameSearch: string;
                 price: number;
                 priceWhole: number | null;
+                unit: string;
                 stock: number;
-                nameSearch: string;
+                categoryId: string;
             };
         } & {
             id: string;
             createdAt: Date;
-            note: string | null;
             price: number;
-            productId: string;
+            note: string | null;
             quantity: number;
+            productId: string;
             orderId: string;
         })[];
     } & {
@@ -46,9 +46,9 @@ export declare class OrdersService {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;
@@ -81,10 +81,10 @@ export declare class OrdersService {
             } & {
                 id: string;
                 createdAt: Date;
-                note: string | null;
                 price: number;
-                productId: string;
+                note: string | null;
                 quantity: number;
+                productId: string;
                 orderId: string;
             })[];
         } & {
@@ -92,9 +92,9 @@ export declare class OrdersService {
             phone: string;
             createdAt: Date;
             updatedAt: Date;
-            address: string;
             orderNumber: string;
             customerName: string;
+            address: string;
             note: string | null;
             deliveryDate: string | null;
             deliveryTime: string | null;
@@ -118,8 +118,8 @@ export declare class OrdersService {
                     id: string;
                     name: string;
                     isActive: boolean;
-                    unit: string;
                     slug: string;
+                    unit: string;
                     stock: number;
                     images: {
                         id: string;
@@ -133,10 +133,10 @@ export declare class OrdersService {
             } & {
                 id: string;
                 createdAt: Date;
-                note: string | null;
                 price: number;
-                productId: string;
+                note: string | null;
                 quantity: number;
+                productId: string;
                 orderId: string;
             })[];
         } & {
@@ -144,9 +144,9 @@ export declare class OrdersService {
             phone: string;
             createdAt: Date;
             updatedAt: Date;
-            address: string;
             orderNumber: string;
             customerName: string;
+            address: string;
             note: string | null;
             deliveryDate: string | null;
             deliveryTime: string | null;
@@ -187,24 +187,24 @@ export declare class OrdersService {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                isFeatured: boolean;
+                slug: string;
                 description: string | null;
                 sortOrder: number;
-                unit: string;
-                slug: string;
-                categoryId: string;
+                isFeatured: boolean;
+                nameSearch: string;
                 price: number;
                 priceWhole: number | null;
+                unit: string;
                 stock: number;
-                nameSearch: string;
+                categoryId: string;
             };
         } & {
             id: string;
             createdAt: Date;
-            note: string | null;
             price: number;
-            productId: string;
+            note: string | null;
             quantity: number;
+            productId: string;
             orderId: string;
         })[];
     } & {
@@ -212,9 +212,9 @@ export declare class OrdersService {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;
@@ -233,24 +233,24 @@ export declare class OrdersService {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                isFeatured: boolean;
+                slug: string;
                 description: string | null;
                 sortOrder: number;
-                unit: string;
-                slug: string;
-                categoryId: string;
+                isFeatured: boolean;
+                nameSearch: string;
                 price: number;
                 priceWhole: number | null;
+                unit: string;
                 stock: number;
-                nameSearch: string;
+                categoryId: string;
             };
         } & {
             id: string;
             createdAt: Date;
-            note: string | null;
             price: number;
-            productId: string;
+            note: string | null;
             quantity: number;
+            productId: string;
             orderId: string;
         })[];
     } & {
@@ -258,9 +258,9 @@ export declare class OrdersService {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;
@@ -286,9 +286,9 @@ export declare class OrdersService {
             phone: string;
             createdAt: Date;
             updatedAt: Date;
-            address: string;
             orderNumber: string;
             customerName: string;
+            address: string;
             note: string | null;
             deliveryDate: string | null;
             deliveryTime: string | null;
@@ -304,9 +304,9 @@ export declare class OrdersService {
         phone: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
         orderNumber: string;
         customerName: string;
+        address: string;
         note: string | null;
         deliveryDate: string | null;
         deliveryTime: string | null;

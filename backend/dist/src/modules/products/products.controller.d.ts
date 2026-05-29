@@ -25,16 +25,16 @@ export declare class ProductsController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            isFeatured: boolean;
+            slug: string;
             description: string | null;
             sortOrder: number;
-            unit: string;
-            slug: string;
-            categoryId: string;
+            isFeatured: boolean;
+            nameSearch: string;
             price: number;
             priceWhole: number | null;
+            unit: string;
             stock: number;
-            nameSearch: string;
+            categoryId: string;
         })[];
         meta: {
             total: number;
@@ -48,9 +48,9 @@ export declare class ProductsController {
     search(q: string, limit?: string): Promise<{
         id: string;
         name: string;
-        unit: string;
         slug: string;
         price: number;
+        unit: string;
         stock: number;
         images: {
             url: string;
@@ -60,8 +60,8 @@ export declare class ProductsController {
         totalSold: number;
         id: string;
         name: string;
-        unit: string;
         price: number;
+        unit: string;
         images: {
             id: string;
             createdAt: Date;
@@ -79,10 +79,10 @@ export declare class ProductsController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            slug: string;
             description: string | null;
             imageUrl: string | null;
             sortOrder: number;
-            slug: string;
         };
         images: {
             id: string;
@@ -99,16 +99,16 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     create(dto: CreateProductDto, files?: Express.Multer.File[]): Promise<{
         category: {
@@ -118,10 +118,10 @@ export declare class ProductsController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            slug: string;
             description: string | null;
             imageUrl: string | null;
             sortOrder: number;
-            slug: string;
         };
         images: {
             id: string;
@@ -138,16 +138,16 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     update(id: string, dto: UpdateProductDto, files?: Express.Multer.File[]): Promise<{
         category: {
@@ -157,10 +157,10 @@ export declare class ProductsController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            slug: string;
             description: string | null;
             imageUrl: string | null;
             sortOrder: number;
-            slug: string;
         };
         images: {
             id: string;
@@ -177,16 +177,16 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -195,15 +195,15 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        isFeatured: boolean;
+        slug: string;
         description: string | null;
         sortOrder: number;
-        unit: string;
-        slug: string;
-        categoryId: string;
+        isFeatured: boolean;
+        nameSearch: string;
         price: number;
         priceWhole: number | null;
+        unit: string;
         stock: number;
-        nameSearch: string;
+        categoryId: string;
     }>;
 }

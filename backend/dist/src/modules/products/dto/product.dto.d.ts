@@ -11,6 +11,7 @@ export declare class CreateProductDto {
     sortOrder?: number;
 }
 export declare class UpdateProductDto extends CreateProductDto {
+    retainedImageUrls?: string[];
 }
 export declare class ProductQueryDto {
     search?: string;

@@ -1,10 +1,10 @@
 import {
   IsEmail,
-  IsString,
-  MinLength,
-  MaxLength,
   IsOptional,
+  IsString,
   Matches,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class RegisterDto {
@@ -33,7 +33,8 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsString({ message: 'Vui lòng nhập email hoặc admin' })
+  @MinLength(1, { message: 'Vui lòng nhập email hoặc admin' })
   email: string;
 
   @IsString()
@@ -55,4 +56,3 @@ export class ResetPasswordDto {
   @MaxLength(50, { message: 'Mật khẩu không được quá 50 ký tự' })
   newPassword: string;
 }
-

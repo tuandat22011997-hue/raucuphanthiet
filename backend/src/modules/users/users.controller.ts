@@ -1,9 +1,10 @@
-import { Controller, Get, Patch, Delete, Body, Query, Param, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { Body, Controller, Delete, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -29,10 +30,21 @@ export class UsersController {
     @Query('search') search?: string,
   ) {
     return this.usersService.findAllCustomers(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
       search,
     );
+  }
+
+  /** PATCH /api/v1/users/:id - Cập nhật khách hàng (Admin) */
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  updateCustomer(
+    @Param('id') id: string,
+    @Body() body: { name?: string; email?: string; phone?: string; password?: string; isActive?: boolean },
+  ) {
+    return this.usersService.updateCustomer(id, body);
   }
 
   /** DELETE /api/v1/users/:id - Xóa người dùng (Admin) */

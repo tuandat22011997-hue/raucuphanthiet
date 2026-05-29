@@ -46,12 +46,15 @@ let ProductsService = class ProductsService {
         let orderBy = {};
         switch (sortBy) {
             case 'price_asc':
+            case 'priceAsc':
                 orderBy = { price: 'asc' };
                 break;
             case 'price_desc':
+            case 'priceDesc':
                 orderBy = { price: 'desc' };
                 break;
             case 'name':
+            case 'nameAsc':
                 orderBy = { name: 'asc' };
                 break;
             case 'newest':
@@ -170,20 +173,21 @@ let ProductsService = class ProductsService {
     }
     async update(id, dto, imageUrls) {
         const product = await this.findById(id);
+        const { retainedImageUrls, ...productData } = dto;
         let slug = product.slug;
         let nameSearch = product.nameSearch;
-        if (dto.name && dto.name !== product.name) {
-            nameSearch = (0, helpers_util_1.removeVietnameseTones)(dto.name);
-            slug = (0, helpers_util_1.createSlug)(dto.name);
+        if (productData.name && productData.name !== product.name) {
+            nameSearch = (0, helpers_util_1.removeVietnameseTones)(productData.name);
+            slug = (0, helpers_util_1.createSlug)(productData.name);
             const existing = await this.prisma.product.findFirst({
                 where: { slug, id: { not: id } },
             });
             if (existing) {
-                slug = (0, helpers_util_1.createSlug)(dto.name, Date.now().toString().slice(-4));
+                slug = (0, helpers_util_1.createSlug)(productData.name, Date.now().toString().slice(-4));
             }
         }
-        if (dto.stock !== undefined && dto.stock !== product.stock) {
-            const diff = dto.stock - product.stock;
+        if (productData.stock !== undefined && productData.stock !== product.stock) {
+            const diff = productData.stock - product.stock;
             await this.prisma.inventoryLog.create({
                 data: {
                     productId: id,
@@ -193,16 +197,19 @@ let ProductsService = class ProductsService {
                 },
             });
         }
+        const finalImageUrls = imageUrls !== undefined
+            ? [...(retainedImageUrls || []), ...imageUrls]
+            : retainedImageUrls;
         return this.prisma.product.update({
             where: { id },
             data: {
-                ...dto,
+                ...productData,
                 slug,
                 nameSearch,
-                ...(imageUrls !== undefined && {
+                ...(finalImageUrls !== undefined && {
                     images: {
                         deleteMany: {},
-                        create: imageUrls.map((url, index) => ({ url, sortOrder: index })),
+                        create: finalImageUrls.map((url, index) => ({ url, sortOrder: index })),
                     },
                 }),
             },

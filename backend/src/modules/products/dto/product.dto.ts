@@ -2,7 +2,7 @@ import {
   IsString, IsNumber, IsOptional, IsBoolean,
   Min, MaxLength, IsArray, ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CreateProductDto {
   @IsString({ message: 'Tên sản phẩm không hợp lệ' })
@@ -49,7 +49,17 @@ export class CreateProductDto {
   sortOrder?: number;
 }
 
-export class UpdateProductDto extends CreateProductDto {}
+export class UpdateProductDto extends CreateProductDto {
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string' && value.length > 0) return [value];
+    return [];
+  })
+  @IsArray()
+  @IsString({ each: true })
+  retainedImageUrls?: string[];
+}
 
 export class ProductQueryDto {
   @IsOptional()

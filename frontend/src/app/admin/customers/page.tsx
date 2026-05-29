@@ -1,21 +1,44 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Edit, Search, ShoppingBag, Trash2, UserCircle } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { usersApi } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, UserCircle, ShoppingBag, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 export default function AdminCustomersPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    isActive: true,
+  });
 
-  // Fetch customers
+  type UpdateCustomerPayload = {
+    name: string;
+    email: string;
+    phone: string;
+    password?: string;
+    isActive: boolean;
+  };
+
   const { data: res, isLoading } = useQuery({
     queryKey: ['admin-customers', page, search],
     queryFn: () => {
@@ -28,7 +51,17 @@ export default function AdminCustomersPage() {
   const customers = res?.data?.data || [];
   const meta = res?.data?.meta || { totalPages: 1 };
 
-  // Delete customer
+  useEffect(() => {
+    if (!selectedCustomer) return;
+    setFormData({
+      name: selectedCustomer.name || '',
+      email: selectedCustomer.email || '',
+      phone: selectedCustomer.phone || '',
+      password: '',
+      isActive: selectedCustomer.isActive,
+    });
+  }, [selectedCustomer]);
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => usersApi.delete(id),
     onSuccess: () => {
@@ -37,7 +70,20 @@ export default function AdminCustomersPage() {
     },
     onError: () => {
       toast.error('Có lỗi xảy ra khi xóa khách hàng');
-    }
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: string; payload: UpdateCustomerPayload }) =>
+      usersApi.updateCustomer(data.id, data.payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-customers'] });
+      toast.success('Cập nhật khách hàng thành công');
+      setSelectedCustomer(null);
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Có lỗi xảy ra khi cập nhật khách hàng');
+    },
   });
 
   const handleDelete = (id: string, name: string) => {
@@ -46,10 +92,30 @@ export default function AdminCustomersPage() {
     }
   };
 
+  const handleEdit = (customer: any) => {
+    setSelectedCustomer(customer);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCustomer) return;
+
+    updateMutation.mutate({
+      id: selectedCustomer.id,
+      payload: {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        ...(formData.password.trim() ? { password: formData.password } : {}),
+        isActive: formData.isActive,
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Danh sách Khách hàng</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Danh sách khách hàng</h1>
       </div>
 
       <Card>
@@ -62,19 +128,16 @@ export default function AdminCustomersPage() {
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
-                setPage(1); // Reset page on search
+                setPage(1);
               }}
             />
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center items-center h-64 text-gray-500">
-              Đang tải dữ liệu...
-            </div>
+            <div className="flex justify-center items-center h-64 text-gray-500">Đang tải dữ liệu...</div>
           ) : customers.length > 0 ? (
             <>
-              {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-200">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-200">
@@ -98,7 +161,9 @@ export default function AdminCustomersPage() {
                             <div>
                               <div className="font-medium text-gray-900">{customer.name || 'Người dùng'}</div>
                               {!customer.isActive && (
-                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">Khóa</span>
+                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">
+                                  Khóa
+                                </span>
                               )}
                             </div>
                           </div>
@@ -107,9 +172,7 @@ export default function AdminCustomersPage() {
                           <div className="text-gray-900">{customer.phone || 'Chưa cập nhật'}</div>
                           <div className="text-xs text-gray-500">{customer.email}</div>
                         </td>
-                        <td className="px-6 py-4 text-center text-gray-600">
-                          {formatDate(customer.createdAt)}
-                        </td>
+                        <td className="px-6 py-4 text-center text-gray-600">{formatDate(customer.createdAt)}</td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-1.5 font-medium text-gray-900">
                             <ShoppingBag size={14} className="text-gray-400" />
@@ -120,16 +183,27 @@ export default function AdminCustomersPage() {
                           {formatCurrency(customer.totalSpent || 0)}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" 
-                            title="Xóa khách hàng"
-                            onClick={() => handleDelete(customer.id, customer.name)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
+                          <div className="inline-flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              title="Sửa khách hàng"
+                              onClick={() => handleEdit(customer)}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Xóa khách hàng"
+                              onClick={() => handleDelete(customer.id, customer.name)}
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -137,7 +211,6 @@ export default function AdminCustomersPage() {
                 </table>
               </div>
 
-              {/* Mobile Card View */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
                 {customers.map((customer: any) => (
                   <div key={customer.id} className="bg-white border rounded-lg p-4 space-y-4 shadow-sm">
@@ -149,14 +222,18 @@ export default function AdminCustomersPage() {
                         <div className="font-medium text-gray-900 text-base truncate flex items-center gap-2">
                           {customer.name || 'Người dùng'}
                           {!customer.isActive && (
-                            <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">Khóa</span>
+                            <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">
+                              Khóa
+                            </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500 mt-0.5 truncate">{customer.phone || 'Chưa cập nhật SĐT'}</div>
+                        <div className="text-sm text-gray-500 mt-0.5 truncate">
+                          {customer.phone || 'Chưa cập nhật SĐT'}
+                        </div>
                         <div className="text-xs text-gray-400 mt-0.5 truncate">{customer.email}</div>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-2 text-sm bg-gray-50 p-3 rounded-md">
                       <div>
                         <div className="text-gray-500 text-xs flex items-center gap-1">
@@ -166,36 +243,45 @@ export default function AdminCustomersPage() {
                       </div>
                       <div>
                         <div className="text-gray-500 text-xs">Tổng chi tiêu</div>
-                        <div className="font-bold text-green-600 mt-0.5">{formatCurrency(customer.totalSpent || 0)}</div>
+                        <div className="font-bold text-green-600 mt-0.5">
+                          {formatCurrency(customer.totalSpent || 0)}
+                        </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-between items-center pt-2 border-t">
-                      <div className="text-xs text-gray-500">
-                        Ngày tạo: {formatDate(customer.createdAt)}
+                      <div className="text-xs text-gray-500">Ngày tạo: {formatDate(customer.createdAt)}</div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          onClick={() => handleEdit(customer)}
+                        >
+                          <Edit size={14} className="mr-1" /> Sửa
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleDelete(customer.id, customer.name)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 size={14} className="mr-1" /> Xóa
+                        </Button>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50" 
-                        onClick={() => handleDelete(customer.id, customer.name)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 size={14} className="mr-1" /> Xóa
-                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
-              
-              {/* Phân trang */}
+
               {meta.totalPages > 1 && (
                 <div className="flex justify-center mt-6 gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={page === 1}
-                    onClick={() => setPage(p => p - 1)}
+                    onClick={() => setPage((p) => p - 1)}
                   >
                     Trước
                   </Button>
@@ -206,7 +292,7 @@ export default function AdminCustomersPage() {
                     variant="outline"
                     size="sm"
                     disabled={page >= meta.totalPages}
-                    onClick={() => setPage(p => p + 1)}
+                    onClick={() => setPage((p) => p + 1)}
                   >
                     Sau
                   </Button>
@@ -221,6 +307,80 @@ export default function AdminCustomersPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && setSelectedCustomer(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Chỉnh sửa khách hàng</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="customer-name">Họ và tên</Label>
+              <Input
+                id="customer-name"
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customer-email">Email</Label>
+              <Input
+                id="customer-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customer-phone">Số điện thoại</Label>
+              <Input
+                id="customer-phone"
+                value={formData.phone}
+                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customer-password">Mật khẩu mới</Label>
+              <Input
+                id="customer-password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                placeholder="Để trống nếu không đổi"
+              />
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={(e) => setFormData((prev) => ({ ...prev, isActive: e.target.checked }))}
+                className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+              />
+              <span className="text-sm font-medium">Cho phép đăng nhập</span>
+            </label>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button type="button" variant="outline" onClick={() => setSelectedCustomer(null)}>
+                Hủy
+              </Button>
+              <Button
+                type="submit"
+                className="bg-green-600 hover:bg-green-700"
+                disabled={updateMutation.isPending}
+              >
+                {updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

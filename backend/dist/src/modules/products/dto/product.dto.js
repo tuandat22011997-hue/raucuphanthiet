@@ -79,8 +79,22 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateProductDto.prototype, "sortOrder", void 0);
 class UpdateProductDto extends CreateProductDto {
+    retainedImageUrls;
 }
 exports.UpdateProductDto = UpdateProductDto;
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (Array.isArray(value))
+            return value;
+        if (typeof value === 'string' && value.length > 0)
+            return [value];
+        return [];
+    }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], UpdateProductDto.prototype, "retainedImageUrls", void 0);
 class ProductQueryDto {
     search;
     categoryId;

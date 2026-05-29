@@ -1,7 +1,7 @@
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, ResetPasswordDto } from './dto/auth.dto';
 export declare class AuthService {
     private prisma;
     private jwtService;
@@ -52,10 +52,10 @@ export declare class AuthService {
             createdAt: Date;
             updatedAt: Date;
             address: string;
+            userId: string;
             label: string | null;
             fullName: string;
             isDefault: boolean;
-            userId: string;
         }[];
         _count: {
             orders: number;

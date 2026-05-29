@@ -32,6 +32,20 @@ export declare class UsersService {
             totalPages: number;
         };
     }>;
+    updateCustomer(id: string, data: {
+        name?: string;
+        email?: string;
+        phone?: string;
+        password?: string;
+        isActive?: boolean;
+    }): Promise<{
+        id: string;
+        email: string;
+        phone: string | null;
+        name: string;
+        role: string;
+        isActive: boolean;
+    }>;
     deleteUser(id: string): Promise<{
         id: string;
         email: string;
