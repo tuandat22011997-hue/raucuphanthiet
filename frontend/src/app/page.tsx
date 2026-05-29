@@ -87,10 +87,11 @@ export default function HomePage() {
                     transform="translate(100 100)"
                   />
                 </svg>
+                <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.55),rgba(255,255,255,0)_68%)]" />
                 <div className="absolute inset-x-12 bottom-8 h-8 rounded-full bg-green-950/12 blur-2xl" />
                 <div className="absolute inset-[12%] translate-y-1 scale-[1.08]">
                   <Image
-                    src="/images/hero-basket.png"
+                    src="/images/hero-basket-cutout.png"
                     alt="Giỏ rau củ tươi"
                     fill
                     priority
